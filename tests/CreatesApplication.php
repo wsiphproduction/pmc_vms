@@ -7,6 +7,9 @@ use Illuminate\Contracts\Console\Kernel;
 trait CreatesApplication
 {
     /**
+     * cute ko
+    */
+    /**
      * Creates the application.
      *
      * @return \Illuminate\Foundation\Application
