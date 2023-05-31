@@ -1,0 +1,34 @@
+.black{
+    color: #000 !important;
+}
+
+.margin-top-20{
+    margin-top: 20px;
+}
+
+.error{
+    color: #e53242;
+}
+
+.margin-left{
+    margin-left: 15px;
+}
+
+/* Request List */
+.request-list-nav{
+    background-color: #F2F2F2;
+    padding: 10px;
+}
+
+.border{
+    border: 1px solid #AAA99C;
+}
+
+.padding-small{
+    padding: 10px;
+}
+
+.container-section{
+    background-color: #F2F2F2; 
+    text-align: center;
+}

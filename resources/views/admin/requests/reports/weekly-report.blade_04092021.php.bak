@@ -1,0 +1,379 @@
+@extends('layout.vehicle_utilization.reports')
+<style>
+    .printOnly {
+       display : none;
+    }
+
+    @media print {
+        .printOnly {
+           display : block;
+        }
+        .page-content-wrapper{
+            padding-right:50px;
+        }
+    }
+</style>
+
+@section('content')
+<div class="printOnly" style="float:left;z-index:1000;position: absolute;top: 160px;width:100%;">
+    <p style="float:right;font-size:30px;font-weight:bold;text-orientation: mixed; writing-mode: vertical-rl;">
+        {{ $request->vehiclename }}
+    </p>
+</div>
+<div class="page-content-wrapper">
+    <div class="page-content">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+                <h3 class="page-title">
+                    <i class="fa fa-certificate"></i> <small>&nbsp;&nbsp;Weekly Report</small>
+                </h3>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+        <div class="row">
+            
+            <div class="col-md-12">
+
+                <!-- BEGIN SAMPLE FORM PORTLET-->
+                <div id="form" class="portlet light bordered">
+                    <div class="portlet-title">
+                        <div class="caption font-red-sunglo">
+                            <i class="fa fa-list font-red-sunglo"></i>
+                            <span class="caption-subject bold uppercase"> Generate Report</span>
+                        </div>
+
+                    </div>
+                    <div class="portlet-body">
+                        <div class="tab-content">
+                            <!-- PERSONAL INFO TAB -->
+                            <span class="caption-subject bold uppercase" >Copy the tables shown on the interface and paste it on excel </span>
+                            <div class="tab-pane active">
+                                <div class="row">
+                                    <div class="form-group col-md-12">
+                                        <form role="form" action="{{route('vehicle.report.dispatch_weekly')}}" method="GET">
+                                            <div class="col-md-3">
+                                                <label class="control-label">Week #<span class="font-red">*</span></label>
+                                                <select name="weekno" id="weekno" class="form-control" required>
+                                                    <option value="">-- Select Week # --</option>
+                                                    @if(isset($weeks))
+
+                                                        @if($request->weeknum!==null)
+                                                        <option value="{{$request->weeknum}}|{{ $request->from }}|$request->to" selected="selected">Week {{$request->weeknum}} ({{ $request->from }} to {{ $request->to }})</option>
+
+                                                        
+                                                        @endif
+                                                    @endif
+                                                    {!! $weeks !!}
+                                                </select>
+                                                <input type="hidden" name="from" id="from">
+                                                <input type="hidden" name="to" id="to">
+                                                <input type="hidden" name="weeknum" id="weeknum">
+                                                <input type="hidden" name="vehiclename" id="vehiclename" value="{{ $request->vehiclename }}">
+                                            </div>                                                                                                                            
+                                            <div class="col-md-4">
+                                                <label class="control-label">Vehicle</label>
+                                                <select name="unit" id="unit" class="form-control">
+                                                    <option value="">-- Select Vehicle --</option>
+
+                                                    @if (isset($unit))
+
+                                                        @foreach ($unit as $item)
+
+                                                        @if( $item->id == request()->query('unit'))
+                                                        
+                                                        <option value="{{$item->id}}|{{$item->crossref_vid}}" selected="selected">{{$item->name}}</option>
+
+                                                        @else
+                                                        
+                                                        <option value="{{$item->id}}|{{$item->crossref_vid}}" >{{$item->name}}</option>
+
+                                                        @endif
+                                                            
+                                                        @endforeach
+                                                        
+                                                    @endif
+                                                    <option value="motor">Motor Cycles</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="control-label">&nbsp;</label>
+                                                <button class="btn btn blue form-control" type="submit">
+                                                    <span class="glyphicon glyphicon-refresh"></span> Generate
+                                                </button>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="control-label">&nbsp;</label>
+                                                 <a class="btn purple form-control" href="javascript:window.print()"><span class="fa fa-print"></span> Print</a>
+                                            </div>
+                                            </form>                                            
+                                            <div class="col-md-3" style="display: none;">
+                                                <label class="control-label">&nbsp;</label>
+                                                <ul class="list-inline">
+                                                    {{-- <li>
+                                                        <form method="POST" action="{{route('vehicle.report.exportToExcel')}}">
+                                                            @csrf
+                                                            <input type="hidden" name="date_from" value="{{request()->query('start')}}">
+                                                            <input type="hidden" name="date_to" value="{{request()->query('end')}}">
+                                                            <input type="hidden" name="driver" value="{{request()->query('driver')}}">
+                                                            <input type="hidden" name="unit" value="{{request()->query('unit')}}">
+                                                            <button type="submit" class="btn btn-circle blue" name="trip_tickets" id="excel-b"><i class="fa fa-file-excel-o"></i> Excel</button>
+                                                        </form>
+                                                    </li> --}}
+                                                    <li>
+                                                       
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END SAMPLE FORM PORTLET-->
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- BEGIN EXAMPLE TABLE PORTLET-->
+                        <div class="portlet light bordered">
+                            <div class="portlet-title">
+                                <div class="caption font-dark">
+                                    <i class="fa fa-tags font-dark"></i>
+                                    <span class="caption-subject bold uppercase"> GENERAL CHECKLIST:</span>&nbsp;&nbsp;<input type="text"  id="vname" name="vname" style="border-style: none" value="{{ $request->vehiclename }}"></span>
+                                </div>                               
+                            </div>
+                            <div class="portlet-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <table class="table table-striped table-bordered table-hover" id="sample_1">
+                                           <tr>
+                                            <th>NO</th>
+                                            <th>DESCRIPTION</th> 
+                                            <th>COMPLETE</th>
+                                            <th>INCOMPLETE</th>
+                                            <th>REMARKS</th>
+                                          </tr>
+                                          <tr>
+                                            <td>1</td>
+                                            <td>VTRFORM</td>
+                                            <td></td>
+                                            <td></td>    
+                                            <td></td>                                        
+                                          </tr>
+                                          <tr>
+                                            <td>2</td>
+                                            <td>PRE-RIDE INSP. CHECKLIST</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                          </tr>
+                                          <tr>
+                                            <td>3</td>
+                                            <td>TRIP TICKETS</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                          </tr>
+                                          <tr>
+                                            <td>4</td>
+                                            <td>FUEL SLIPS</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                          </tr>
+                                        </table>
+                                    </div>
+
+                                </div>  
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- BEGIN EXAMPLE TABLE PORTLET-->
+                        <div class="portlet light bordered">
+                            <div class="portlet-title">
+                                <div class="caption font-dark">
+                                    <i class="fa fa-tags font-dark"></i>
+                                    <span class="caption-subject bold uppercase"> Trip Tickets</span>
+                                </div>
+                                {{-- <div class="actions">
+                                    <ul class="list-inline">
+                                        <li>
+                                            <form method="POST" action="{{route('vehicle.report.exportToExcel')}}">
+                                                @csrf
+                                                <input type="hidden" name="date_from" value="{{request()->query('start')}}">
+                                                <input type="hidden" name="date_to" value="{{request()->query('end')}}">
+                                                <input type="hidden" name="driver" value="{{request()->query('driver')}}">
+                                                <input type="hidden" name="unit" value="{{request()->query('unit')}}">
+                                                <button type="submit" class="btn btn-circle blue" name="trip_tickets" id="excel-b"><i class="fa fa-file-excel-o"></i> Excel</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <a class="btn btn-circle purple" id="print-b" href="javascript:window.print()"><span class="fa fa-print"></span> Print</a>
+                                        </li>
+                                    </ul>
+                                </div> --}}
+                            </div>
+                            @if(!$isMotor)
+                            <div class="portlet-body">
+                               <table class="table table-striped table-bordered table-hover" id="sample_1">
+                                    <thead>
+                                        <tr>
+                                            <th>Request No</th>
+                                            <th>Week #</th>
+                                            <th>Date Needed</th>
+                                            <th>Check PRC</th>
+                                            <th>Check VTR</th>
+                                            <th>Trip Ticket No</th>
+                                            <th>Check Trip Ticket</th>
+                                            <th>Status</th>
+                                            <th>Vehicle</th>
+                                            <th>Vehicle Date Out</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($rs))
+                                            @foreach ($rs as $r)
+                                                @if($r->refcode)
+                                                <tr>
+                                                    <td>{{$r->refcode}}</td>
+                                                    <td>{{$weeknum}}</td>
+                                                    <td>{{ date('Y-m-d H:i A',strtotime($r->date_needed)) }}</td>
+                                                    <td> </td>
+                                                    <td> </td>
+                                                    <td>{{$r->tripTicket}}</td>
+                                                    <td> </td>
+                                                    <td>{{$r->Status}}</td>
+                                                    <td>{{$r->name}} ({{$r->plateno}})</td>
+                                                    <td>{{date('Y-m-d H:i A',strtotime($r->dateStart))}}</td>
+                                                    <td> </td>
+                                                </tr>
+                                                @endif
+                                            @endforeach
+
+                                        @endif
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- BEGIN EXAMPLE TABLE PORTLET-->
+                        <div class="portlet light bordered">
+                            <div class="portlet-title">
+                                <div class="caption font-dark">
+                                    <i class="fa fa-tags font-dark"></i>
+                                    <span class="caption-subject bold uppercase"> Fuel Request List</span>
+                                </div>
+                                {{-- <div class="actions">
+                                    <ul class="list-inline">
+                                        <li>
+                                            <form method="POST" action="{{route('vehicle.report.exportToExcel')}}">
+                                                @csrf
+                                                <input type="hidden" name="date_from" value="{{request()->query('start')}}">
+                                                <input type="hidden" name="date_to" value="{{request()->query('end')}}">
+                                                <input type="hidden" name="driver" value="{{request()->query('driver')}}">
+                                                <input type="hidden" name="unit" value="{{request()->query('unit')}}">
+                                                <button type="submit" class="btn btn-circle blue" name="trip_tickets" id="excel-b"><i class="fa fa-file-excel-o"></i> Excel</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <a class="btn btn-circle purple" id="print-b" href="javascript:window.print()"><span class="fa fa-print"></span> Print</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div> --}}
+                            <div class="portlet-body">
+                               <table class="table table-striped table-bordered table-hover" id="sample_1">
+                                    <thead>
+                                        <tr>
+                                            <th>RQ No</th>
+                                            <th>Week #</th>
+                                            <th>Date Req</th>
+                                            <th>Ref No</th> 
+                                            <th>Check Fuel Slip</th>                                           
+                                            <th>Vehicle</th>
+                                            <th>Requested</th>
+                                            <th>Issued</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        @if(isset($fresult))
+                                            @foreach ($fresult as $fr)
+                                                <tr>
+                                                    <td>{{ $fr->rq }} </td>
+                                                    <td>{{$weeknum}}</td>
+                                                    <td>{{ date('Y-m-d H:i A',strtotime($fr->created_at)) }}</td>
+                                                    <td>{{$fr->uniq_code}}</td>   
+                                                    <td> </td>                      
+                                                    <td>{{$fr->vehicle}}</td>
+                                                    <td>{{$fr->requested_qty }}</td>
+                                                    <td>{{$fr->actual_qty }}</td>
+                                                    <td> </td>
+                                                </tr>
+                                                
+                                            @endforeach
+
+                                        @endif
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+@section('javascript')
+<script>
+   $("#weekno").on("change",function(){
+        //Getting Value
+        var selValue = $("#weekno :selected").val().split('|');
+        //Setting Value  
+        $("#weeknum").val(selValue[0]);              
+        $("#from").val(selValue[1]);
+        $("#to").val(selValue[2]);
+        
+    }); 
+     $("#unit").on("change",function(){
+        //Getting Value
+        var selectedValue = $("#unit :selected").text();
+        //Setting Value  
+        $("#vname").val(selectedValue);                      
+        $("#vehiclename").val(selectedValue);
+    }); 
+</script>
+@endsection

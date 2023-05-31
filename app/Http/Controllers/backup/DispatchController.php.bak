@@ -1,0 +1,320 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
+use App\Http\Requests\VehicleReqRequest;
+use App\Enums\VehicleRequestStatusEnum;
+use App\Enums\DispatchStatusEnum;
+
+use App\VehicleRequest;
+use App\FuelTypes;
+use App\Dispatch;
+use App\Department;
+use App\Unit;
+use App\Drivers;
+
+use App\Helper\Validators;
+
+use Exception;
+use Carbon\Carbon;
+use DB;
+
+class DispatchController extends Controller
+{
+    public function tripTicket(Request $request){
+        $cancel_id = $request->get('cancel_tid');
+        $query = Dispatch::where('tripTicket', $request->get('id'))
+            ->first();
+        
+        $driver = Drivers::where('id', $query->driver_id);
+        $dest = $query->destination;
+        $ex = explode('|', $dest);
+        $origin = $ex[0];
+        $destination = $ex[1];
+
+        $cancelled = ($query->Status == 'Cancelled' || $query->Status == 'Closed') ? 'none;' : '';
+
+        if(isset($cancel_id)){
+            $date_cancelled = date('Y-m-d h:i:s a');
+
+            $dispatch = Dispatch::where('tripTicket', $request->get('tid'))->first();
+            $dispatch->Status = 'Cancelled';
+            $dispatch->CancelledBy = \Session::get('esdvms_username');
+            $dispatch->Cancelled_at = $date_cancelled;
+
+            if($dispatch){
+                $successMSG = 'Trip Ticket Succesfully <b>Cancelled</b>...';
+            }else {
+                $errorMSG = 'Trip Ticket <b>Cancellation</b> Failed...';
+            }
+
+            return view('admin.requests.trip_ticket.dispatch_details', [
+                'dispatch' => $query,
+                'driver' => $driver,
+                'destination' => $destination,
+                'successMSG' => $successMSG,
+                'errorMSG' => $errorMSG
+            ]);
+        }
+
+        else{
+            return view('admin.requests.trip_ticket.dispatch_details', [
+                'dispatch' => $query,
+                'driver' => $driver,
+                'destination' => $destination
+            ]);
+        }
+        
+    }
+
+
+    public function vehiclesTotalDispatchReport(Request $request){
+        $reports = [];
+        $vehicles = [];
+
+        $start = $request->has('start');
+        $end = $request->has('end');
+
+        if( $start || $end) {
+            $vehicles = Unit::with([
+                'dispatches'
+            ])
+            ->whereHas('dispatches', function($query) use($start, $end){
+                $query->whereBetween('addedDate', [$start, $end]);
+            })
+            ->get();
+        }
+
+        else{
+            $vehicles = Unit::with([
+                'dispatches'
+            ])
+            ->get();
+        }
+
+        foreach($vehicles as $vehicle){
+            $object = new \stdClass();
+            $object->label = $vehicle->type;
+            $object->value = count($vehicle->dispatches);
+
+            array_push($reports, $object);
+        }
+
+
+        return view('admin.requests.reports.vehicle_total_dispatch', [
+            'vehicles' => $reports,
+            'start' => $start,
+            'end' => $end
+        ]);
+    }
+
+    public function vehiclesTotalDistance(Request $request){
+        $reports = [];
+        $dispatches = null;
+        
+        $start = $request->has('start');
+        $end = $request->has('end');
+
+        if( $start || $end) {
+
+            $start = $request->query('start'); // or request->start
+            $end = $request->query('end'); //or request->end
+            
+            $dispatches = Dispatch::distanceTravelled()
+                ->whereBetween('addedDate', [$start, $end])
+                ->get();
+        }
+        else
+        {
+            $dispatches = Dispatch::distanceTravelled()
+                ->get();
+        }
+        
+        foreach($dispatches as $dispatch){
+            $reportObject = new \stdClass;
+            $reportObject->label = $dispatch->unit->type;
+            $reportObject->odometer_start = $dispatch->odometer_start;
+            $reportObject->odometer_end = $dispatch->odometer_end;
+            $reportObject->no_kim = $dispatch->odometer_start - $dispatch->odometer_end; 
+            $reportObject->value = $reportObject->no_kim;
+
+            array_push($reports, $reportObject);
+        }
+
+        return view('admin.requests.reports.vehicle_total_distance', [
+            'items' => $reports,
+            'start' => $start,
+            'end' => $end
+        ]);
+    }
+
+    public function create(Request $request){
+        $passengers = '';
+        $passenger = '';
+        $app_date = '';
+        $destination = '';
+        
+        if(strpos($request->vehicles, 'Select Vehicle') !== false) { //No vehicle selected
+            $unitId = "";
+            $type = "";
+        } else {
+            $vehicles = explode('|',$request->vehicles);
+            $unitId = $vehicles[0] ;
+            $type = $vehicles[1];
+        }
+
+        foreach($request->passenger as $p){
+            $passengers .= strtoupper($p.'|');
+            $passenger = rtrim($passengers, '|');
+        }
+
+        if(strlen($request->app_date) <= 14) {
+            $app_date = explode(".", $request->app_date);
+            $app_date = Carbon::parse($app_date[0])->format('Y-m-d 00:00:00');
+        }
+        else {
+            $app_date = Carbon::parse($request->app_date)->format('Y-m-d h:i:s');
+        }
+        
+        if($request->origin && $request->destination) {
+            $destination = $request->origin.'|'.$request->destination;
+        }
+        
+        $dispatch = Dispatch::create([
+            'do' => $request->date_out,
+			'dateStart' => $request->date_out,
+            'unitId' => $unitId,
+            'addedBy' => \Session::get('esdvms_username'),
+            'type' => $type,
+            'app_date' => $app_date,
+            'destination' => $destination,
+            'origin' => $request->origin,
+            'odometer_start' => $request->odom_start,
+			'purpose' => $request->purpose,
+			'addedDate' => $app_date,
+            'vehicle_cost_code' => $request->cost_code,
+            'RQ' => $request->rq_num,
+            'fuel_added_type' => explode('|', $request->fueltyp)[1],
+            'itemCode' => $request->item_code,
+            'fuel_added_qty' => $request->req_qty,
+            'uom' => $request->uom,
+            'driver_id' => $request->driver,
+            'passengers' => $passenger
+        ]);
+
+        $dispatch->deptId = $request->get('deptId');
+        $dispatch->request_id = $request->rid;
+        $dispatch->Status = DispatchStatusEnum::NEW_TICKET;
+        $dispatch->save();
+
+        $dispatch->tripTicket = sprintf('TN-%06d', $dispatch->id);
+        $dispatch->save();
+        
+        $vehicle_request = VehicleRequest::findOrFail($request->rid);
+        $vehicle_request->status = VehicleRequestStatusEnum::SCHEDULED;
+        $vehicle_request->save();
+
+        return redirect()->route('vehicle.request.list');
+    }
+
+    public function dispatchesPerDepartmentReport(Request $request){
+        $jsonDispatches = [];
+        $start = $request->input('start');
+        $end = $request->input('end');
+        $departments = null;
+        
+        if( $start || $end) {
+           
+            $query = "SELECT top(10) deptId,count(deptId) AS total FROM dispatch
+                    WHERE addedDate BETWEEN '".$start."' AND '".$end."' GROUP BY deptId ORDER BY total DESC";
+           
+            $departments = DB::select($query);
+            
+        }
+
+        else{
+            $query = "SELECT top(10) deptId,count(deptId) AS total FROM dispatch
+                    GROUP BY deptId ORDER BY total DESC";
+
+            $departments = DB::select($query);
+            
+        }
+
+        foreach($departments as $department){
+            $object = new \stdClass();
+            $object->label = $department->deptId;
+            $object->value = $department->total;
+
+            array_push($jsonDispatches, $object);
+        }
+
+        return view('admin.requests.reports.dispatch_per_dept', [
+            'items' => $jsonDispatches,
+            'start' => $start,
+            'end' => $end
+        ]);
+    }
+
+    public function dispatchesPerDepartment(){
+        $jsonDispatches = [];
+
+        $departments = Department::dispatches()
+        ->get();
+        // ->each(function($data){
+        //     $data->label = $data->name;
+        //     $data->value = count($data->dispatch);
+        // });
+        foreach($departments as $department){
+            $object = new \stdClass();
+            $object->label = $department->name;
+            $object->value = count($department->dispatch);
+
+            array_push($jsonDispatches, $object);
+        }
+
+        return response()->json($jsonDispatches);
+    }
+
+    public function vehiclesTotalDispatches(){
+        $report = [];
+
+        $vehicles = Unit::with([
+            'dispatches'
+        ])
+        ->get();
+        
+        foreach($vehicles as $vehicle){
+            $object = new \stdClass();
+            $object->label = $vehicle->type;
+            $object->value = count($vehicle->dispatches);
+
+            array_push($report, $object);
+        }
+
+        return response()->json($report);
+    }
+
+    public function vehicleDistanceTravelled(){
+        $reports = [];
+    
+        $dispatches = Dispatch::selectRaw('odometer_start - odometer_end as distance, dispatch.id, dispatch.unitId')
+            ->where('status', DispatchStatusEnum::COMPLETE)
+            ->with(['unit:id,type'])
+            ->groupBy('unitId')
+            ->get();
+
+        foreach($dispatches as $dispatch){
+            $reportObject = new \stdClass;
+            $reportObject->label = $dispatch->unit->type;
+            $reportObject->value = $dispatch->distance;
+
+            array_push($reports, $reportObject);
+        }
+
+        return response()->json($reports);
+    }
+}

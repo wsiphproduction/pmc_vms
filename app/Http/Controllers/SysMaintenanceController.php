@@ -1,0 +1,312 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mechanic;
+use App\Unit;
+use App\UnitStatus;
+use App\Assigned;
+use App\RepairBreakdown;
+use App\RepairPreventive;
+use Illuminate\Http\Request;
+use Laravel\Ui\Presets\React;
+
+class SysMaintenanceController extends Controller
+{
+    // UNIT
+    public function unit()
+    {
+        $units = Unit::all();
+        return view('admin.maintenance.unit',compact('units'));
+    }
+
+    public function unitSave(Request $request)
+    {
+        Unit::create([
+            'name'=> $request->get('brand'),
+            'type'=> $request->get('unit_type'),
+            'required_availability_hours' =>  $request->get('required_availability_hours'),
+            'active'=> 1,
+            'dept'=> $request->get('department') ? $request->get('department') : $request->get('departmentmanual'),
+            'model'=> $request->get('model'),
+            'plateno'=> $request->get('plate_number'),
+            'chassisno'=> $request->get('chassis_serial'),
+            'engineno'=> $request->get('engine_serial'),
+            'color'=> $request->get('color'),
+            'vehicle_code'=> $request->get('vehicle_code').'.'.$request->get('dept_code').'.158',
+        ]);
+
+        return redirect()->back();
+    }
+
+    public function unitEdit($id)
+    {
+        $item = Unit::find($id);
+        $units = Unit::all();
+        return  view('admin.maintenance.unit',compact('item','units'));
+    }
+
+    public function unitUpdate($id)
+    {
+        $unit = Unit::find($id);
+        $unit->vehicle_code = request()->get('vehicle_code').'.'.request()->get('dept_code').'.158';
+        $unit->name = request()->get('brand');
+        $unit->model = request()->get('model');
+        $unit->plateno = request()->get('plateno');
+        $unit->chassisno = request()->get('chassisno');
+        $unit->engineno = request()->get('engineno');
+        $unit->color = request()->get('color');
+        $unit->type = request()->get('type');
+        $unit->required_availability_hours = request()->get('required_availability_hours');
+        $unit->save();
+
+        return redirect()->back();
+    }
+
+    public function unitDelete($id)
+    {
+        $unit = Unit::find($id);
+      
+        if($unit)
+        {
+            Unit::destroy($id);
+        }
+
+        return redirect()->back();
+    }
+    // MECHNIC
+    public function mechanic()
+    {
+        $mechanics = Mechanic::all();
+        return view('admin.maintenance.mechanic',compact('mechanics'));
+    }
+
+    public function mechanicSave(Request $request)
+    {
+        Mechanic::create([
+            'name'=> $request->get('name'),
+            'active'=> 1
+        ]);
+
+        return redirect()->back();
+    }
+    
+    public function mechanicEdit($id)
+    {
+
+        $item = Mechanic::find($id);
+        $mechanics = Mechanic::all();
+        return  view('admin.maintenance.mechanic',compact('item','mechanics'));
+    }
+
+    public function mechanicUpdate($id)
+    {
+        $mechanic = Mechanic::find($id);
+        $mechanic->name = request()->get('name');
+        $mechanic->save();
+
+        return redirect()->back();
+    }
+
+    public function mechanicDelete($id)
+    {
+        $mechanic = Mechanic::find($id);
+      
+        if($mechanic)
+        {
+            Mechanic::destroy($id);
+        }
+
+        return redirect()->back();
+    }
+
+    // STATUS
+    public function status()
+    {
+        $status = UnitStatus::all();
+        return view('admin.maintenance.status',compact('status'));
+    }
+
+    public function statusSave(Request $request)
+    {
+
+        UnitStatus::create([
+            'status'=> $request->get('name'),
+            'active'=> 1
+        ]);
+
+        return redirect()->back();
+    }
+    
+    public function statusEdit($id)
+    {
+
+        $item = UnitStatus::find($id);
+        $status = UnitStatus::all();
+        return  view('admin.maintenance.status',compact('item','status'));
+    }
+
+    public function statusUpdate($id)
+    {
+        $status = UnitStatus::find($id);
+        $status->status = request()->get('name');
+        $status->save();
+
+        return redirect()->back();
+    }
+
+    public function statusDelete($id)
+    {
+        $status = UnitStatus::find($id);
+      
+        if($status)
+        {
+            UnitStatus::destroy($id);
+        }
+
+        return redirect()->back();
+    }
+
+    // ASSIGNED
+    public function assigned()
+    {
+        $assigned = Assigned::all();
+        return view('admin.maintenance.assigned',compact('assigned'));
+    }
+
+    public function assignedSave(Request $request)
+    {
+
+        Assigned::create([
+            'name'=> $request->get('name'),
+            'active'=> 1
+        ]);
+
+        return redirect()->back();
+    }
+    
+    public function assignedEdit($id)
+    {
+        $item = Assigned::find($id);
+        $assigned = Assigned::all();
+        
+        return  view('admin.maintenance.assigned',compact('item','assigned'));
+    }
+
+    public function assignedUpdate($id)
+    {
+        $assigned = Assigned::find($id);
+        $assigned->name = request()->get('name');
+        $assigned->save();
+
+        return redirect()->back();
+    }
+
+    public function assignedDelete($id)
+    {
+        $assigned = Assigned::find($id);
+      
+        if($assigned)
+        {
+            Assigned::destroy($id);
+        }
+
+        return redirect()->back();
+    }
+
+
+    // PREVENTIVE
+    public function preventive()
+    {
+        $preventive = RepairPreventive::all();
+        return view('admin.maintenance.preventive',compact('preventive'));
+    }
+
+    public function preventiveSave(Request $request)
+    {
+
+        RepairPreventive::create([
+            'name'=> $request->get('name'),
+            'active'=> 1
+        ]);
+
+        return redirect()->back();
+    }
+    
+    public function preventiveEdit($id)
+    {
+        $item = RepairPreventive::find($id);
+        $preventive = RepairPreventive::all();
+        
+        return  view('admin.maintenance.preventive',compact('item','preventive'));
+    }
+
+    public function preventiveUpdate($id)
+    {
+        $preventive = RepairPreventive::find($id);
+        $preventive->name = request()->get('name');
+        $preventive->save();
+
+        return redirect()->back();
+    }
+
+    public function preventiveDelete($id)
+    {
+        $preventive = RepairPreventive::find($id);
+      
+        if($preventive)
+        {
+            RepairPreventive::destroy($id);
+        }
+
+        return redirect()->back();
+    }
+
+    // BREAKDOWN
+    public function breakdown()
+    {
+        $breakdown = RepairBreakdown::all();
+        return view('admin.maintenance.breakdown',compact('breakdown'));
+    }
+
+    public function breakdownSave(Request $request)
+    {
+
+        RepairBreakdown::create([
+            'name'=> $request->get('name'),
+            'active'=> 1
+        ]);
+
+        return redirect()->back();
+    }
+    
+    public function breakdownEdit($id)
+    {
+        $item = RepairBreakdown::find($id);
+        $breakdown = RepairBreakdown::all();
+        
+        return  view('admin.maintenance.breakdown',compact('item','breakdown'));
+    }
+
+    public function breakdownUpdate($id)
+    {
+        $breakdown = RepairBreakdown::find($id);
+        $breakdown->name = request()->get('name');
+        $breakdown->save();
+
+        return redirect()->back();
+    }
+
+    public function breakdownDelete($id)
+    {
+        $breakdown = RepairBreakdown::find($id);
+      
+        if($breakdown)
+        {
+            RepairBreakdown::destroy($id);
+        }
+
+        return redirect()->back();
+    }
+    
+}

@@ -1,0 +1,33 @@
+.form-grid{
+    display: grid;
+}
+
+.section-request-list{
+    margin-top: 60px;
+}
+
+.flex-stuff{
+    display: flex;
+}
+
+.margin-left-5{
+    margin-left: 5px;
+}
+
+.remove-margin{
+    margin: 0px;
+}
+
+.margin-auto{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.flex-stuff-end{
+    align-items: flex-end;
+}
+
+.margin-right-auto{
+    margin-left:autp;
+}
+
