@@ -704,7 +704,7 @@ class VehicleRequestController extends Controller
 
     public function tripcompleted($id)
     {
-
+        // dd($id);
         $dispatch = Dispatch::where('tripTicket', $id)->first();
         $vehicle_request = VehicleRequest::where('id', $dispatch->request_id)->first();
         $unit = Unit::where('id', $dispatch->unitId)->first();
@@ -803,6 +803,7 @@ class VehicleRequestController extends Controller
 
     public function updateDispatchDetails($id, Request $request)
     {
+            // dd($request);
         try {
 
             if ($request->has('dispatch_edit')) {
@@ -839,7 +840,7 @@ class VehicleRequestController extends Controller
                 }
 
                 $odom_s = $request->input('odom_start') ?? null;
-
+                
                 $result = DB::table('dispatch')->where('tripTicket', $ticket)->update([
                     'odometer_start' => $odom_s,
                     'deptId' => $department,
@@ -908,7 +909,7 @@ class VehicleRequestController extends Controller
         } catch (\Exception $e) {
             $message['error'] = $e->getMessage();
             $message['line'] = $e->getLine();
-            dd($message);
+            // dd($message);
         }
     }
 
@@ -919,6 +920,8 @@ class VehicleRequestController extends Controller
 
     public function editDispatchDetailsForm($id, Request $request)
     {
+       // return $id;
+       
         $i = 0;
         try {
 
@@ -953,14 +956,14 @@ class VehicleRequestController extends Controller
             foreach ($units as $item) {
                 $i++; //debugging
 
-                $downtimeQuery = "SELECT * FROM DOWNTIME WHERE Status != 'CANCELLED' AND unitId=" . $item->id . " AND " . "'" . Carbon::parse($vehicleRequest['date_needed'])->format('Y-m-d h:i:s') . "'" . " between dateStart AND dateEnd";
+                $downtimeQuery = "SELECT * FROM DOWNTIME WHERE Status != 'CANCELLED' AND unitId=" . $item->id . " AND " . "'" . date('Y-m-d',strtotime(substr($request->date_needed,0,10))) . "'" . " between dateStart AND dateEnd";
 
                 $check_if_down = DB::select($downtimeQuery);
 
                 if ($check_if_down) {
                     $unavailable_units .= "<option disabled value=" . $item->id . "|" . $item->name . ">" . $item->name . " - " . $check_if_down['repairType'] . "</option>";
                 } else {
-                    $query = "SELECT * FROM DISPATCH WHERE STATUS NOT IN ('Cancelled','Completed','Closed') AND unitId=" . $item->id . " AND " . "'" . Carbon::parse($vehicleRequest['date_needed'])->format('Y-m-d h:i:s') . "'" . " BETWEEN dateStart AND ISNULL(dateEnd,DATEADD(hour,5,dateStart));";
+                    $query = "SELECT * FROM DISPATCH WHERE STATUS NOT IN ('Cancelled','Completed','Closed') AND unitId=" . $item->id . " AND " . "'" . date('Y-m-d',strtotime(substr($request->date_needed,0,10))) . "'" . " BETWEEN dateStart AND ISNULL(dateEnd,DATEADD(hour,5,dateStart));";
 
                     $check_if_no_booking = DB::select($query);
 
@@ -980,13 +983,20 @@ class VehicleRequestController extends Controller
                 'admin.requests.dispatch.dispatch_edit_form',
                 compact('id', 'history', 'destination', 'origin', 'isReadOnly', 'isPrinted', 'dispatch', 'vehicleRequest', 'drivers', 'activeDrivers', 'passengers', 'in_used_units', 'unavailable_units', 'available_units')
             );
+
+
+
         } catch (\Exception $e) {
             $message['error'] = $e->getMessage();
             $message['line'] = $e->getLine();
             $message['unitloop'] = $i;
-            // dd($message);
+             dd($message);
         }
     }
+
+
+
+
 
     public function requestDetails(Request $request, $id)
     {
@@ -1016,7 +1026,8 @@ class VehicleRequestController extends Controller
     public function dispatchPrintout(Request $request, $id)
     {
         
-        
+        // dd($request);
+
         $query1 = "SELECT di.*, dr.driver_name FROM dispatch AS di LEFT JOIN drivers AS dr ON di.driver_id = dr.id WHERE tripTicket = '" . $id . "'";
         $dispatch = DB::select($query1);
 
@@ -1032,9 +1043,10 @@ class VehicleRequestController extends Controller
         $query5 = "SELECT * FROM request_other_info WHERE request_id = " . $vehicle_request[0]->id;
         $request_other_info = DB::select($query5);
 
-        $query6 = "SELECT fullname FROM users WHERE domain = '" . Session::get('esdvms_username') . "'";
-        $users = DB::select($query6);
-
+        
+        $query = "SELECT fullname FROM users WHERE domain = '" . Session::get('esdvms_username') . "'";
+        $users = DB::select($query);
+        // dd($query);
         $date_needed = '';
         $date_start = '';
 
