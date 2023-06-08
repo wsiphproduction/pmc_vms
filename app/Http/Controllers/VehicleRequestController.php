@@ -285,7 +285,7 @@ class VehicleRequestController extends Controller
 
 
         if ($start || $end) {
-            $requests = RequestRawData::where('dateStart', '>', $start . ' 00:00:00.000')->where('dateStart', '<',  $end . ' 23:59:59.999')->get();
+            $requests = RequestRawData::where('dateStart', '>', $start . ' 00:00:00.10')->where('dateStart', '<',  $end . ' 23:59:59.999')->get();
         } else {
             $requests = RequestRawData::get();
         }
@@ -315,8 +315,11 @@ class VehicleRequestController extends Controller
             $date_needed = explode(".", $vehicle_request->date_needed);
             $date_needed = Carbon::parse($date_needed[0])->format('Y-m-d 00:00:10');
         } else {
-            $date_needed = Carbon::parse($vehicle_request->date_needed)->format('Y-m-d h:i:s');
+            // $date_needed = {{ date('Y-m-d',strtotime(substr($vehicle_request->date_needed,0,10))) }};
+            
+            $date_needed = Carbon::parse($vehicle_request->date_needed)->format('Y-m-d 00:00:10');
         }
+        
         
         foreach ($units as $item) {
 
@@ -704,10 +707,12 @@ class VehicleRequestController extends Controller
 
     public function tripcompleted($id)
     {
-        // dd($id);
+        
         $dispatch = Dispatch::where('tripTicket', $id)->first();
         $vehicle_request = VehicleRequest::where('id', $dispatch->request_id)->first();
+        
         $unit = Unit::where('id', $dispatch->unitId)->first();
+        // dd($unit);
         $driver = Drivers::where('id', $dispatch->driver_id)->first();
         
         if ($dispatch->fuel_added_qty == null || $dispatch->fuel_added_qty == 0) {
@@ -719,9 +724,11 @@ class VehicleRequestController extends Controller
 
         return view('admin.requests.trip_completed', compact('dispatch', 'vehicle_request', 'unit', 'driver', 'id', 'total'));
     }
+
+    
     public function tripcompleted_addDispatch($id)
     {
-
+        
         $dispatch = Dispatch::where('request_id', $id)->first();
         $vehicle_request = VehicleRequest::where('id', $dispatch->request_id)->first();
         $unit = Unit::where('id', $dispatch->unitId)->first();
@@ -995,9 +1002,6 @@ class VehicleRequestController extends Controller
     }
 
 
-
-
-
     public function requestDetails(Request $request, $id)
     {
         $vehicle_request_query = 'SELECT *,CONVERT(nvarchar(MAX), date_needed, 20) AS need FROM vehicle_request WHERE id=' . $id;
@@ -1017,7 +1021,7 @@ class VehicleRequestController extends Controller
             $vehicle_request[0]->other_instructions = $request_other_info[0]->other_instructions;
             $vehicle_request[0]->pickup_dept = $request_other_info[0]->pickup_dept;
             $vehicle_request[0]->pickup_location = $request_other_info[0]->pickup_location;
-            $vehicle_request[0]->need = date('Y-m-d H:i', strtotime($vehicle_request[0]->need));
+            $vehicle_request[0]->need = date('Y-m-d', strtotime($vehicle_request[0]->need));
         }
 
         return $vehicle_request;
@@ -1025,9 +1029,8 @@ class VehicleRequestController extends Controller
 
     public function dispatchPrintout(Request $request, $id)
     {
+        // dd(session()->all());
         
-        // dd($request);
-
         $query1 = "SELECT di.*, dr.driver_name FROM dispatch AS di LEFT JOIN drivers AS dr ON di.driver_id = dr.id WHERE tripTicket = '" . $id . "'";
         $dispatch = DB::select($query1);
 
@@ -1043,7 +1046,7 @@ class VehicleRequestController extends Controller
         $query5 = "SELECT * FROM request_other_info WHERE request_id = " . $vehicle_request[0]->id;
         $request_other_info = DB::select($query5);
 
-        
+
         $query = "SELECT fullname FROM users WHERE domain = '" . Session::get('esdvms_username') . "'";
         $users = DB::select($query);
         // dd($query);

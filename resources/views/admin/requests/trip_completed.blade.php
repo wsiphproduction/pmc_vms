@@ -12,7 +12,7 @@
 	<link rel="stylesheet" type="text/css" href="{{ asset('metronic/assets/global/plugins/bootstrap-select/bootstrap-select.min.css') }}" />
 	<link rel="stylesheet" type="text/css" href="{{ asset('metronic/assets/global/plugins/select2/select2.css') }}" />
 	<link rel="stylesheet" type="text/css" href="{{ asset('metronic/assets/global/plugins/jquery-multi-select/css/multi-select.css') }}" />
-
+	
 
 	<!-- BEGIN THEME STYLES -->
 	<link href="{{ asset('metronic/assets/global/css/components.css') }}" rel="stylesheet" type="text/css" />
@@ -94,7 +94,8 @@
 															<tr>
 																<td width="200px;">Date Needed: </td>
 																<td>
-																	{{ Carbon\Carbon::parse($vehicle_request->date_needed)->format('Y-m-d h:i:s A') ?? ''}}
+																	{{-- {{ Carbon\Carbon::parse($vehicle_request->date_needed)->format('Y-m-d h:i:s A') ?? ''}} --}}
+																	{{ date('Y-m-d',strtotime(substr($vehicle_request->date_needed,0,10))) }}
 																</td>
 
 															</tr>
@@ -114,19 +115,22 @@
 														<table style="font-size: 15px;" class="table table-condensed">
 															<tr>
 																<td width="190px;">Date Out : </td>
-																<td>{{  Carbon\Carbon::parse($dispatch->dateStart)->format('Y-m-d h:i:s A') ?? ''}}</td>
+																{{-- <td>{{  Carbon\Carbon::parse($dispatch->dateStart)->format('Y-m-d h:i:s A') ?? ''}}</td> --}}
+																<td>{{ date('Y-m-d',strtotime(substr($dispatch->dateStart,0,10))) }}</td>
 															</tr>
 															<tr>
 																<td width="190px;">Vehicle :</td>
-																<td>{{$unit->name ?? '' }}</td>
+
+																<td>{{ $unit->name ?? '' }}</td>
 															</tr>
 															<tr>
 																<td width="190px;">Driver :</td>
+																
 															<td>{{$driver->driver_name ?? ''}}</td>
 															</tr>
 															<tr>
 																<td width="190px;">Destination :</td>
-																<td><b>From:</b> {{ explode('|', $dispatch->destination)[0] ?? '' }} &nbsp;&nbsp; <b>To:</b> {{ explode('|', $dispatch->destination)[1] ?? '' }}</td>
+																<td> <b></b> {{ explode('|', $dispatch->destination)[0] ?? '' }} &nbsp;&nbsp; <b class="des" style="margin-left: -12px;">To:</b> {{ explode('|', $dispatch->destination)[1] ?? '' }}</td>
 															</tr>
 															<tr>
 																<td width="190px;">Purpose :</td>
@@ -169,7 +173,8 @@
 											<tr>
 												<td width="190px;">Return Date & Time :</td>
 												<td>
-													{{  Carbon\Carbon::parse($dispatch->dateEnd)->format('F d, Y h:i:s A') ?? '' }}												
+													{{-- {{  Carbon\Carbon::parse($dispatch->dateEnd)->format('F d, Y h:i:s A') ?? '' }}		 --}}
+													{{ date('Y-m-d',strtotime(substr($dispatch->dateEnd,0,10))) }}										
 												</td>
 											</tr>
 											<tr>

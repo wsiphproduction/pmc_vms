@@ -493,10 +493,10 @@ use Carbon\Carbon;
 						<tr>
 							<td style="width:80px;"><a target="_blank" href="{{ route('vehicle.request.get', ['id' => $request->id]) }}" >{{ $request->refcode }}</a></td>
 							<td style="width:140px;">{{ $request->dept }}</td>
-							<td style="width:140px;">{{ date('Y-m-d',strtotime($request->date_needed)) }}</td> 
+							<td style="width:140px;">{{ date('Y-m-d',strtotime(substr($request->date_needed,0,10))) }}</td> 
 							{{-- <td style="width:140px;">{{ $request->date_needed }}</td>  --}}
 							{{-- <td style="width:140px;">{{ \Carbon\Carbon::parse($request->date_needed)->format('Y-m-d') }}</td> --}}
-							<td style="width:140px;">{{ date('Y-m-d',strtotime($request->addedAt)) }}</td>     
+							<td style="width:140px;">{{ date('Y-m-d',strtotime(substr($request->addedAt,0,10))) }}</td>     
 							<td>{{ $request->purpose }}</td>
 							<td id="msg_status{{ $request->id }}">{{ isset($request->message) ? $request->message->message: '' }}</td>       
 							<td style="color: 
