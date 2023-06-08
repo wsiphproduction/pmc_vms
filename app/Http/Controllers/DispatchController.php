@@ -50,7 +50,7 @@ class DispatchController extends Controller
         $cancelled = ($query->Status == 'Cancelled' || $query->Status == 'Closed') ? 'none;' : '';
 
         if (isset($cancel_id)) {
-            $date_cancelled = date('Y-m-d h:i:s a');
+            $date_cancelled = date('Y-m-d');
             
             $dispatch = Dispatch::where('tripTicket', $request->get('tid'))->first();
             $dispatch->Status = 'Cancelled';
@@ -162,7 +162,7 @@ class DispatchController extends Controller
     public function create(Request $request)
     {
 
-        // dd($request->all());
+        
         $passengers = '';
         $passenger = '';
         $app_date = '';
@@ -186,7 +186,10 @@ class DispatchController extends Controller
             $app_date = explode(".", $request->app_date);
             $app_date = Carbon::parse($app_date[0])->format('Y-m-d 00:00:10');
         } else {
+            // $app_date =  date ('Y-m-d',strtotime(substr($request->app_date,0,10)));
             $app_date = Carbon::parse($request->app_date)->format('Y-m-d h:i:s');
+            // {{ date('Y-m-d',strtotime(substr($request->date_needed,0,10))) }}
+            // dd($app_date);
         }
             
          {

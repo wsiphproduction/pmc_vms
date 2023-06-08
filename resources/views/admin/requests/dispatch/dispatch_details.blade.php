@@ -178,7 +178,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group col-md-12">
+                        {{-- <div class="form-group col-md-12">
                             <div class="caption font-red-sunglo">
                                 <i class="fa fa-automobile font-red-sunglo"></i>
                                 <span class="caption-subject bold uppercase" style="font-size: 16px;"> Return Slip
@@ -191,15 +191,16 @@
                             <div class="col-md-3">
                                 <label class="control-label">Date Return</label>
                                 <div class="input-group date form_datetime col-md-12" data-date=""
-                                    data-date-format="yyyy-mm-dd HH:ii p" data-link-field="date_return">
+                                    data-date-format="Y-m-d" data-link-field="date_return">
                                     <div class="input-icon">
                                         <i class="fa fa-calendar font-yellow"></i>
                                         <input class="form-control" size="16" type="text"
-                                            value="{{ $dispatch->odometer_end }}" readonly>
+                                            value="{{ $dispatch->dateEnd }}" readonly>
                                     </div>
                                     <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
                                     <input type="hidden" name="date_return" id="date_return" value="" />
                                 </div>
+
                             </div>
                             <div class="col-md-3">
                                 <label class="control-label">Odometer End</label>
@@ -208,15 +209,15 @@
                                     <input readonly type="number" class="form-control"
                                         value="{{ $dispatch->odometer_end }}">
                                 </div>
-                            </div>
-                            <div class="col-md-3">
+                            </div> --}}
+                            {{-- <div class="col-md-3">
                                 <label class="control-label">Fuel Type</label>
                                 <input readonly class="form-control" type="text"
                                     value="{{ strtoupper($dispatch->fuel_added_type) }}">
                             </div>
-                        </div>
+                        </div> --}}
 
-                        <div class="form-group col-md-12">
+                        {{-- <div class="form-group col-md-12">
                             <div class="col-md-3">
                                 <label class="control-label">Fuel Requested Qty</label>
                                 <div class="input-icon">
@@ -230,15 +231,15 @@
                                 <label class="control-label">Actual Qty</label>
                                 <input readonly class="form-control" type="text"
                                     value="{{ $dispatch->fuel_added_qty }}">
-                            </div>
+                            </div> --}}
 
-                            <div class="col-md-3">
+                            {{-- <div class="col-md-3">
                                 <label class="control-label">UOM</label>
                                 <div class="input-icon">
                                     <i class="icon-calculator font-yellow"></i>
                                     <input readonly type="text" class="form-control" value="{{ $dispatch->oum }}">
                                 </div>
-                            </div>
+                            </div> --}}
                             <div style="margin-top: 180px;"></div>
                         </div>
                     </div>
