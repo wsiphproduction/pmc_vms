@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\RoleRightService;
 use App\Services\ReportService;
+use App\Http\Controllers\Controller;
 
 class VehicleReportDestinationController extends Controller
 {

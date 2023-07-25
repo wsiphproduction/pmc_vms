@@ -32,6 +32,7 @@ class HomeController extends Controller
     }
     public function index()
     {
+        
         $departments = Department::all();
 
         return view('admin.home.index', [
@@ -41,6 +42,7 @@ class HomeController extends Controller
 
     public function dashboard(Request $request)
     {
+        
         $rolesPermissions = $this->roleRightService->hasPermissions("Downtime Dashboard");
 
         if (!$rolesPermissions['view']) {

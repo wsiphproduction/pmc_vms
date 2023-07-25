@@ -78,7 +78,7 @@
 					</div>
 				</div>
 
-				<div class="tile selected" onclick='window.open("http://mlappsvr.philsaga.com/PMC-VMS/public/storage/VMS%20Manual.pdf","displayWindow","toolbar=no,scrollbars=yes,width=1200,height=500");'>
+				<div class="tile selected" onclick='window.open("http://172.16.20.28/VMS/public/storage/VMS%20Manual.pdf","displayWindow","toolbar=no,scrollbars=yes,width=1200,height=500");'>
 					<div class="corner"> </div>
 					<div class="tile-body">
 						<i class="fa fa-book"></i>

@@ -18,13 +18,13 @@ class SysMaintenanceUnitsController extends Controller
      */
 
     public function __construct(
-        RoleRightService $roleRightService
-    ) {
+        RoleRightService $roleRightService) 
+        {
         $this->roleRightService = $roleRightService;
     }
     public function fms_index()
     {
-
+        
         $units = Unit::where('isECS', 0)->get();
 
         $localDept = Department::get();
@@ -72,6 +72,7 @@ class SysMaintenanceUnitsController extends Controller
 
     public function vms_vehicles()
     {
+       
         $rolesPermissions = $this->roleRightService->hasPermissions("Vehicle Master File");
 
         $create = $rolesPermissions['create'];

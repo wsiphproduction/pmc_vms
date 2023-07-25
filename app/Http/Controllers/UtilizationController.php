@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\RoleRightService;
+use App\Models\User;
+use App\Http\Controllers\Controller;
 
 class UtilizationController extends Controller
 {
-    public function __construct(
-        RoleRightService $roleRightService
-    ) {
+    public function __construct(RoleRightService $roleRightService) 
+    {
         $this->roleRightService = $roleRightService;
     }
+    
     public function dashboard()
-    {
+    {   
+        
         $rolesPermissions = $this->roleRightService->hasPermissions("Utilization Dashboard");
-
         if (!$rolesPermissions['view']) {
             abort(401);
         }
@@ -43,28 +46,14 @@ class UtilizationController extends Controller
 
     public function frequentDestination()
     {
-        // dd('frequentDestination');// Define a User model class
-        namespace App\Models;
-        use Illuminate\Database\Eloquent\Model;
+       
+    }
         
-        class User extends Model
-        {
-            protected $table = 'users';
-        }
-        
-        // Retrieve data in a controller method
-        use App\Models\User;
-        
-        public function index()
-        {
-            $users = User::all();
-            return view('users', ['users' => $users]);
-        }
-        
-        // Display data in a view
-        @foreach ($users as $user)
-            <p>{{ $user->name }}</p>
-        @endforeach
+    public function index()
+    {
+        $users = User::all();
+        return view('users', ['users' => $users]);
+       
         $jsondata = array(
             "chart" => array(
                 "caption" => "FREQUENT DESTINATIONS",
@@ -96,6 +85,7 @@ class UtilizationController extends Controller
 
         return view('admin.utilization.frequent-destination', compact('jsondata'));
     }
+
 
     public function vehicleDistance()
     {
